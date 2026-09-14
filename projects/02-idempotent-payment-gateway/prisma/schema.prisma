@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Generic idempotency record — the unique constraint on `key` is what makes
+// concurrent duplicate requests safe: only one caller can ever successfully
+// insert a given key, so exactly one of them proceeds to do real work while
+// every other caller (this request retried, or a true concurrent duplicate)
+// waits for and then replays that one's result.
+model IdempotencyKey {
+  id             String   @id @default(uuid())
+  key            String   @unique
+  requestHash    String
+  status         String // "processing" | "completed" | "failed"
+  responseStatus Int?
+  responseBody   Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// The actual business record. Kept separate from IdempotencyKey because
+// idempotency is a cross-cutting concern (any endpoint could use it), while
+// a Charge is specific to what this particular endpoint does.
+model Charge {
+  id                String   @id @default(uuid())
+  idempotencyKey    String   @unique
+  processorChargeId String
+  amount            Int
+  currency          String
+  customerId        String
+  status            String // "succeeded" | "failed"
+  createdAt         DateTime @default(now())
+}

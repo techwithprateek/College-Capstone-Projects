@@ -1,0 +1,5 @@
+Model comparison (selection metric: attack_recall, not accuracy — see src/evaluate.py)
+
+model              accuracy   attack_recall
+random_forest        0.9996          0.9996
+xgboost              0.9996          0.9997  <- shipped

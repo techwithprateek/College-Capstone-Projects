@@ -1,0 +1,34 @@
+{
+  "name": "url-shortener-analytics",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:up": "docker compose up -d && npx prisma migrate deploy",
+    "db:down": "docker compose down",
+    "test": "vitest run",
+    "verify": "tsx scripts/verify.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.3.1",
+    "ioredis": "^5.4.2",
+    "next": "^15.1.4",
+    "qrcode": "^1.5.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/qrcode": "^1.5.5",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "prisma": "^6.3.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.4"
+  }
+}

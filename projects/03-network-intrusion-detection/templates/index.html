@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Network Intrusion Detection</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; max-width: 800px; margin: 2rem auto; padding: 0 1rem; color: #1a1a1a; }
+    h1 { font-size: 1.4rem; }
+    textarea { width: 100%; height: 260px; font-family: ui-monospace, monospace; font-size: 0.85rem; box-sizing: border-box; }
+    button { margin: 0.5rem 0.5rem 0.5rem 0; padding: 0.5rem 1rem; cursor: pointer; }
+    pre { background: #f4f4f4; padding: 1rem; overflow-x: auto; border-radius: 6px; }
+    .prediction { font-size: 1.2rem; font-weight: bold; padding: 0.75rem; border-radius: 6px; }
+    .prediction.normal { background: #d4edda; color: #155724; }
+    .prediction.attack { background: #f8d7da; color: #721c24; }
+  </style>
+</head>
+<body>
+  <h1>🛡️ Network Intrusion Detection</h1>
+  <p>Paste a traffic record's 41 feature values (or load one of the real examples below) and classify it.</p>
+
+  <div>
+    <button onclick="loadExample('normal')">Load: normal traffic</button>
+    <button onclick="loadExample('neptune_dos_attack')">Load: DoS attack (neptune)</button>
+    <button onclick="loadExample('guess_passwd_r2l_attack')">Load: R2L attack (guess_passwd)</button>
+  </div>
+
+  <textarea id="payload"></textarea>
+  <br />
+  <button onclick="classify()">Classify</button>
+
+  <div id="result"></div>
+
+  <script>
+    const examples = {{ examples | safe }};
+
+    function loadExample(name) {
+      document.getElementById("payload").value = JSON.stringify(examples[name], null, 2);
+      document.getElementById("result").innerHTML = "";
+    }
+
+    async function classify() {
+      const resultEl = document.getElementById("result");
+      let body;
+      try {
+        body = JSON.parse(document.getElementById("payload").value);
+      } catch (e) {
+        resultEl.innerHTML = "<pre>Invalid JSON: " + e.message + "</pre>";
+        return;
+      }
+
+      const res = await fetch("/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        resultEl.innerHTML = "<pre>" + JSON.stringify(data, null, 2) + "</pre>";
+        return;
+      }
+
+      const cls = data.prediction === "normal" ? "normal" : "attack";
+      resultEl.innerHTML =
+        '<div class="prediction ' + cls + '">Prediction: ' + data.prediction + "</div>" +
+        "<pre>" + JSON.stringify(data.probabilities, null, 2) + "</pre>";
+    }
+
+    loadExample("normal");
+  </script>
+</body>
+</html>

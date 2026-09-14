@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  MEMBER
+  ADMIN
+}
+
+enum ApplicationStatus {
+  APPLIED
+  SCREENING
+  INTERVIEW
+  OFFER
+  REJECTED
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  email        String        @unique
+  // Null for a user who only ever signed in via GitHub OAuth.
+  passwordHash String?
+  name         String?
+  githubId     String?       @unique
+  role         Role          @default(MEMBER)
+  createdAt    DateTime      @default(now())
+  applications Application[]
+}
+
+model Application {
+  id                 Int                @id @default(autoincrement())
+  userId             Int
+  user               User               @relation(fields: [userId], references: [id])
+  company            String
+  role               String
+  status             ApplicationStatus  @default(APPLIED)
+  notes              String?
+  lastStatusChangeAt DateTime           @default(now())
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  statusHistory      StatusChange[]
+  reminders          Reminder[]
+
+  @@index([userId])
+}
+
+// An append-only audit trail of every status transition — the whole point
+// of modeling status as a state machine instead of a free-text field is
+// that you can answer "when did this move to Interview?" without guessing.
+model StatusChange {
+  id            Int                @id @default(autoincrement())
+  applicationId Int
+  application   Application        @relation(fields: [applicationId], references: [id])
+  fromStatus    ApplicationStatus?
+  toStatus      ApplicationStatus
+  changedAt     DateTime           @default(now())
+}
+
+model Reminder {
+  id            Int          @id @default(autoincrement())
+  applicationId Int
+  application   Application  @relation(fields: [applicationId], references: [id])
+  dueAt         DateTime
+  sentAt        DateTime?
+  createdAt     DateTime     @default(now())
+
+  @@index([applicationId])
+}

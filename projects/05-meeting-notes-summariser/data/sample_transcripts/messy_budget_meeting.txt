@@ -1,0 +1,23 @@
+[Q3 Budget Review — rough notes]
+
+Jordan: uh okay so, yeah, let's -- let's talk budget. um. so we're over on the infra line item again.
+
+Alex: yeah by like, I think it was 12%? over what we planned.
+
+Jordan: right, 12%. okay. so, we need to, someone needs to dig into why. I don't think it's one thing.
+
+Alex: could be the new staging environment we spun up.
+
+Jordan: maybe. yeah. someone should look into that but I don't -- I don't think we assigned it.
+
+Alex: yeah no one's on it yet.
+
+Jordan: okay. moving on. we did decide to freeze new hires for the rest of the quarter, right? that was the call last time.
+
+Alex: yeah that's still the decision. freeze stands.
+
+Jordan: got it. and um, marketing spend — we're keeping it flat, not cutting it, right?
+
+Alex: right, flat, we agreed not to touch it.
+
+Jordan: cool. I think that's it for today honestly, this was short.

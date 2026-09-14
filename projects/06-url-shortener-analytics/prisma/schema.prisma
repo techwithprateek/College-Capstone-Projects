@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Link {
+  // The autoincrement id IS the source of the short code: base62-encoding
+  // a value the database already guarantees is unique means slug
+  // generation needs no randomness and no collision retry loop at all.
+  // See lib/shortcode.ts.
+  id        Int       @id @default(autoincrement())
+  slug      String    @unique
+  targetUrl String
+  createdAt DateTime  @default(now())
+  expiresAt DateTime?
+  clicks    Click[]
+
+  @@index([expiresAt])
+}
+
+model Click {
+  id        Int      @id @default(autoincrement())
+  linkId    Int
+  link      Link     @relation(fields: [linkId], references: [id])
+  clickedAt DateTime @default(now())
+  referrer  String?
+  ip        String?
+  country   String?
+  city      String?
+
+  @@index([linkId])
+}

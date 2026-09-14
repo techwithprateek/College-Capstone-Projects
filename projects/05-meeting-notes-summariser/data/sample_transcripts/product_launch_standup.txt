@@ -1,0 +1,27 @@
+[Meeting: Product Launch Sync — Weekly Standup]
+
+Sarah: Okay let's get started. Quick recap — we're two weeks out from the launch. Where are we on the marketing site?
+
+Dev: The site is basically done. I pushed the new landing page yesterday. Just waiting on final copy review.
+
+Sarah: Great. Priya, can you review the copy by end of day Wednesday?
+
+Priya: Yeah, I can do that. I'll get comments back to Dev by Wednesday EOD.
+
+Sarah: Perfect. What about the pricing page? I thought we agreed to go with the three-tier pricing model instead of the flat rate.
+
+Dev: Yeah, we decided on three tiers last week — Starter, Pro, and Enterprise. I still need to update the pricing page to reflect that.
+
+Sarah: Okay, so that's decided. Dev, can you have the pricing page updated by Friday?
+
+Dev: Friday works.
+
+Sarah: Also — we need someone to write the launch announcement blog post. Any volunteers?
+
+Marcus: I can take that one. I'll have a draft ready by next Monday.
+
+Sarah: Awesome, thanks Marcus. Last thing — QA testing. Are we still blocked on the payment flow bug?
+
+Dev: That one's fixed actually, merged this morning.
+
+Sarah: Nice, good progress everyone. Let's reconvene Thursday.

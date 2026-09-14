@@ -1,0 +1,43 @@
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  color: #1a1a1a;
+}
+h1 { font-size: 1.5rem; }
+input, button, select, textarea {
+  font-size: 0.95rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-family: inherit;
+}
+button {
+  background: #1a1a1a;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+button.secondary { background: white; color: #1a1a1a; border: 1px solid #ccc; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+button:hover:not(:disabled) { background: #333; }
+button.secondary:hover:not(:disabled) { background: #f4f4f4; }
+.form-row { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+.form-row input, .form-row select { flex: 1; min-width: 120px; }
+table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+th, td { text-align: left; padding: 0.5rem; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+.muted { color: #666; font-size: 0.85rem; }
+.error { color: #b00020; font-size: 0.9rem; }
+.badge { padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+.badge.APPLIED { background: #e0e0e0; color: #333; }
+.badge.SCREENING { background: #fff3cd; color: #856404; }
+.badge.INTERVIEW { background: #cce5ff; color: #004085; }
+.badge.OFFER { background: #d4edda; color: #155724; }
+.badge.REJECTED { background: #f8d7da; color: #721c24; }
+.stat-grid { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1rem 0; }
+.stat-box { border: 1px solid #eee; border-radius: 8px; padding: 0.75rem 1rem; min-width: 100px; }
+.stat-box .value { font-size: 1.4rem; font-weight: 700; }
+.stat-box .label { font-size: 0.8rem; color: #666; }
+nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }

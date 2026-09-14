@@ -1,0 +1,28 @@
+About Northwind Robotics
+
+Northwind Robotics was founded in 2019 in Austin, Texas by a small team of
+robotics engineers who wanted to make warehouse automation affordable for
+mid-sized businesses, not just large enterprises.
+
+Our flagship product is the Northwind Scout, a modular warehouse robot that
+handles inventory scanning, pallet transport, and shelf restocking. The Scout
+is designed to be deployed without rebuilding a warehouse's existing layout.
+
+Mission Statement
+Our mission is to make advanced warehouse automation accessible to any
+business, regardless of size, by keeping hardware modular and pricing
+transparent.
+
+Frequently Asked Questions
+
+Q: Does the Scout require special warehouse infrastructure?
+A: No. The Scout navigates using onboard cameras and LIDAR, so it does not
+require floor markers, beacons, or rewiring.
+
+Q: What is the battery life of the Scout?
+A: A fully charged Scout runs for approximately 10 hours of continuous
+operation before needing to return to its charging dock.
+
+Q: Is Northwind Robotics a public company?
+A: No, Northwind Robotics is privately held and has not announced plans for
+an IPO.
