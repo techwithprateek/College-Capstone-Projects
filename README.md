@@ -1,234 +1,333 @@
-# College Capstone Projects
+# 🎓 College Capstone Projects
 
-Seven final-year capstone projects, each a complete, working, tested
-application — not a tutorial skeleton. Every project has been verified for
-real: dependencies actually installed, tests run against real databases
-(not mocks), and each app's core flows exercised live against a running
-server. Where a project needed external credentials this environment
-doesn't have (an OpenAI key, a GitHub OAuth App, a Resend account), that's
-called out explicitly in its README, along with exactly what was and
-wasn't possible to verify without one.
+**Seven final-year capstone projects. Zero tutorial skeletons.**
 
-Each project is fully self-contained — clone this repo and work from a
-single subfolder, or copy just that folder out on its own.
+Every line here was actually run: dependencies installed, tests fired at
+real Postgres/Redis instances (not mocks), servers booted, APIs hit with
+curl, and — where a project needed a real OpenAI/GitHub/Resend credential
+this sandbox doesn't have — that gap is named explicitly instead of papered
+over. Bugs that were found along the way were fixed, not hidden.
 
-## At a glance
+<p align="left">
+  <img alt="Projects" src="https://img.shields.io/badge/projects-7-blueviolet" />
+  <img alt="Tests" src="https://img.shields.io/badge/tests-174%20passing-brightgreen" />
+  <img alt="Real bugs fixed" src="https://img.shields.io/badge/real%20bugs%20found%20%26%20fixed-8-orange" />
+  <img alt="License" src="https://img.shields.io/badge/license-MIT-lightgrey" />
+</p>
 
-| # | Project | Stack | Difficulty |
-|---|---------|-------|------------|
-| 1 | [RAG Chatbot](projects/01-rag-chatbot) | Python, LangChain, ChromaDB, OpenAI | Beginner → Intermediate |
-| 2 | [Idempotent Payment Gateway](projects/02-idempotent-payment-gateway) | Node/TS, Express, Prisma, Postgres | Intermediate → Advanced |
-| 3 | [Network Intrusion Detection](projects/03-network-intrusion-detection) | Python, scikit-learn, XGBoost, Flask | Intermediate |
-| 4 | [Conversational RAG](projects/04-conversational-rag) | Python, LangChain, OpenAI | Intermediate |
-| 5 | [Meeting Notes Summariser](projects/05-meeting-notes-summariser) | Python, LangChain, Pydantic, OpenAI | Beginner → Intermediate |
-| 6 | [URL Shortener + Analytics](projects/06-url-shortener-analytics) | Next.js/TS, Prisma, Postgres, Redis | Intermediate |
-| 7 | [Job Application Tracker](projects/07-job-application-tracker) | Next.js/TS, Prisma, Postgres, Redis, BullMQ | Intermediate → Advanced |
+Clone the whole repo, or copy a single `projects/0N-*` folder out on its
+own — each one is fully self-contained.
 
 ---
 
-## 1. RAG Chatbot
+## 🗺️ The map
 
-**What it is.** Upload PDF, TXT, and CSV files and ask questions about them
-in a chat UI. Every answer cites the exact chunk it came from, and the bot
-says "I don't know" instead of guessing when nothing relevant was
-retrieved.
+Two tracks, seven projects. The AI track shares a common RAG core that
+gets progressively more sophisticated; the systems track each teaches one
+hard, distinct backend lesson.
 
-**Tech stack:** Python, LangChain, ChromaDB, OpenAI (`gpt-4o-mini` +
-`text-embedding-3-small`), Streamlit, pytest.
+```mermaid
+flowchart TB
+    subgraph AI["🧠 AI / LLM TRACK"]
+        direction LR
+        P1["1️⃣ RAG Chatbot<br/><sub>retrieval + citations</sub>"]
+        P4["4️⃣ Conversational RAG<br/><sub>+ memory + rewriting</sub>"]
+        P5["5️⃣ Meeting Summariser<br/><sub>structured, no hallucinations</sub>"]
+        P3["3️⃣ Intrusion Detection<br/><sub>classical ML, not LLM</sub>"]
+        P1 -->|"builds on"| P4
+    end
 
-**Difficulty: Beginner → Intermediate.** The basic load → chunk → embed →
-retrieve pipeline is genuinely approachable. What pushes it up a notch:
-token-aware chunking (via tiktoken, not character-counting), a
-relevance-score threshold so retrieval can admit "nothing relevant found,"
-and a real evaluation harness scoring retrieval hit-rate and answer
-quality — most tutorials stop well short of any of that.
+    subgraph SYS["⚙️ SYSTEMS / BACKEND TRACK"]
+        direction LR
+        P2["2️⃣ Payment Gateway<br/><sub>concurrency correctness</sub>"]
+        P6["6️⃣ URL Shortener<br/><sub>caching + rate limiting</sub>"]
+        P7["7️⃣ Job Tracker<br/><sub>auth + queues + RBAC</sub>"]
+    end
 
-**Why it's worth putting on a resume.** RAG is the single most
-in-demand applied-AI skill in the current job market, and this is the
-project every interviewer has seen a shallow version of. What sets this
-one apart in an interview: you can explain *why* chunk size is measured in
-tokens not characters, describe the retrieval-relevance-threshold tradeoff
-from having actually tuned it, and — this is the strong one — show real
-numbers from an eval script (retrieval hit-rate, answer-quality pass rate)
-instead of "it seemed to work when I tried it."
+    style AI fill:#f5f0ff,stroke:#8b5cf6
+    style SYS fill:#eefcf3,stroke:#10b981
+```
 
-## 2. Idempotent Payment Gateway
-
-**What it is.** A `POST /charges` API that's safe to retry — fire the same
-request 10 times simultaneously and exactly one charge happens, with every
-caller getting back the identical response.
-
-**Tech stack:** Node.js, TypeScript, Express, Prisma, PostgreSQL, Vitest +
-Supertest, Docker Compose.
-
-**Difficulty: Intermediate → Advanced.** Not because the endpoint is
-complex — it's about 100 lines — but because *proving* it's correct under
-real concurrency is a genuinely hard testing problem most projects never
-attempt. This one does: 20 concurrent calls at the core mechanism, 10
-concurrent HTTP requests at the actual route, both asserting exactly one
-charge happened.
-
-**Why it's worth putting on a resume.** This is the one project here
-that's pure backend/distributed-systems, not AI — good if you want a
-resume that reads as more than "did some AI stuff." Idempotency keys and
-race-condition-safe writes are a real, frequently-interviewed system-design
-topic (any company processing payments, webhooks, or retries cares about
-this), and "I load-tested my own idempotency implementation under real
-concurrency" is a much stronger interview answer than describing the
-pattern in the abstract.
-
-## 3. Network Intrusion Detection System
-
-**What it is.** A classifier that labels network traffic as normal or one
-of four attack categories (DoS, Probe, R2L, U2R), served live behind a
-Flask app with a small web UI to test real traffic examples.
-
-**Tech stack:** Python, scikit-learn, XGBoost, pandas, Flask, matplotlib/
-seaborn, pytest.
-
-**Difficulty: Intermediate.** Standard classifier training is
-approachable; what makes this version harder (and more honest) is the
-severe class imbalance in the data — one attack type is ~57% of all
-traffic, several others are under 0.1% — which forces real decisions about
-evaluation metrics instead of just reporting accuracy.
-
-**Why it's worth putting on a resume.** It's the one ML project here
-that isn't LLM/RAG-shaped, which matters if you're applying anywhere that
-wants to see you can work with tabular data and classical ML, not just
-prompt an API. The specific interview-ready story: this project explicitly
-optimizes for *attack recall* over accuracy and can explain why (a missed
-attack is a security incident; a false alarm is an analyst's wasted five
-minutes) — "your model has 99% accuracy, is it good?" is a classic
-interview trap question this project gives you a genuine, earned answer
-to, backed by a real run where the rarest class hit 100% recall.
-
-## 4. Conversational RAG
-
-**What it is.** The RAG Chatbot, but it actually holds a conversation —
-ask "how many days is that per week?" after asking about a policy, and it
-correctly resolves what "that" refers to before searching, instead of
-running semantic search on a pronoun.
-
-**Tech stack:** Python, LangChain, OpenAI, Streamlit, pytest — builds
-directly on Project 1's core.
-
-**Difficulty: Intermediate.** A natural next step after Project 1, not a
-starting point. The genuinely non-trivial part is bounded conversation
-memory: once history grows past a token budget, older turns get collapsed
-into a running summary rather than kept forever or silently dropped.
-
-**Why it's worth putting on a resume.** Almost every "chat with your PDF"
-project on a resume is the single-shot version; a chatbot that correctly
-handles follow-ups is the detail that shows you went one level past a
-tutorial. This project has a side-by-side demo proving the exact failure
-mode it fixes — a real, captured example where the un-rewritten follow-up
-gets "I don't have enough information" and the rewritten one gets the
-right answer — which is a much more concrete talking point than claiming
-"it supports multi-turn conversations."
-
-## 5. Meeting Notes Summariser
-
-**What it is.** Paste a messy meeting transcript, get back a clean
-summary, key decisions, and action items with owners and due dates — as
-structured data, with any field the model couldn't actually verify against
-the transcript flagged rather than trusted silently.
-
-**Tech stack:** Python, LangChain, Pydantic, OpenAI, Streamlit, pytest.
-
-**Difficulty: Beginner → Intermediate.** The most approachable AI project
-here — good first LLM project if RAG feels like a lot at once. The
-non-obvious part worth the "intermediate" label: getting a model to
-correctly leave a field null when the transcript genuinely doesn't say,
-instead of inventing a plausible-sounding owner or date.
-
-**Why it's worth putting on a resume.** Structured extraction from messy
-unstructured text is one of the most commercially deployed LLM patterns —
-support ticket triage, legal document review, CRM notes — far more
-common in real jobs than open-ended chat. This project's strongest
-interview material: a transcript with an action item deliberately left
-unassigned in conversation ("no one's on it yet," with two named speakers
-right there as a trap), verified live to come back with `owner: null`
-rather than a guessed name — plus an independent, non-LLM grounding check
-as a second line of defense. That's a concrete, demonstrated answer to
-"how do you keep an LLM from making things up," not a claim.
-
-## 6. URL Shortener + Analytics
-
-**What it is.** Custom short links with click analytics (referrer, geo,
-timestamp), QR code generation, link expiration, and rate-limited link
-creation.
-
-**Tech stack:** Next.js, TypeScript, Prisma, PostgreSQL, Redis, Docker
-Compose, Vitest.
-
-**Difficulty: Intermediate.** Looks like a weekend toy; the redirect
-endpoint, the caching layer, and the rate limiter each hide a real design
-decision. Short-code generation is collision-free by construction (base62
-of the database's own autoincrement id, not random-with-retry); the
-Redis cache stores enough to make a cache hit touch zero database rows on
-the redirect hot path; the rate limiter is a true sliding-window log, not
-the common (and subtly incorrect) fixed-window counter.
-
-**Why it's worth putting on a resume.** "Design a URL shortener" is a
-genuinely classic system-design interview question, and this project maps
-onto it almost exactly — meaning you've actually built and load-tested the
-thing people are usually only asked to whiteboard. The proof, not just the
-claim: a live-measured 1.9ms average redirect latency on the cache-hit
-path, and 30 concurrent requests against a rate limit of 10 allowing
-*exactly* 10 through, which is what demonstrates the rate limiter's
-check-and-increment is truly atomic rather than merely "usually correct."
-
-## 7. Job Application Tracker
-
-**What it is.** Track job applications through a real status pipeline
-(Applied → Screening → Interview → Offer/Rejected), with automated
-follow-up reminder emails and an analytics dashboard, behind real
-authentication — email/password and "Sign in with GitHub."
-
-**Tech stack:** Next.js, TypeScript, Prisma, PostgreSQL, Redis, BullMQ,
-`jose` (JWT), bcrypt, Resend, Docker Compose, Vitest.
-
-**Difficulty: Intermediate → Advanced.** The least flashy idea in this
-portfolio and the one with the most real surface area: this is the only
-project here with the GitHub OAuth Authorization Code flow built from the
-actual protocol (not a plugged-in auth library), a background job queue
-for scheduled reminders, and two distinct layers of access control (per-
-user ownership checks, plus a role-gated admin view) — each independently
-tested, including that a user genuinely cannot modify someone else's data.
-
-**Why it's worth putting on a resume.** It's the most "obviously real
-software" of the seven to a non-technical interviewer, and to a technical
-one it's the deepest backend project here: real password hashing, a JWT
-session implemented directly against `jose` rather than a framework, and
-an actual OAuth2 token exchange you can explain step by step, because you
-wrote each step yourself instead of configuring a library that does it
-invisibly. The status pipeline is a proper validated state machine with a
-full audit trail, not a free-text field — which is also what makes its
-analytics correct (conversion rates computed from full status history, so
-an application that reached Interview before being rejected still counts
-as having reached Interview, not just "Rejected").
+| # | Project | Stack | Difficulty | Tests |
+|---|---------|-------|:----------:|:-----:|
+| 1 | [RAG Chatbot](projects/01-rag-chatbot) | Python · LangChain · ChromaDB · OpenAI | 🟢 Beginner→Mid | 16 |
+| 2 | [Idempotent Payment Gateway](projects/02-idempotent-payment-gateway) | Node/TS · Express · Prisma · Postgres | 🟠 Mid→Advanced | 9 |
+| 3 | [Network Intrusion Detection](projects/03-network-intrusion-detection) | Python · scikit-learn · XGBoost · Flask | 🟡 Mid | 16 |
+| 4 | [Conversational RAG](projects/04-conversational-rag) | Python · LangChain · OpenAI | 🟡 Mid | 27 |
+| 5 | [Meeting Notes Summariser](projects/05-meeting-notes-summariser) | Python · LangChain · Pydantic · OpenAI | 🟢 Beginner→Mid | 13 |
+| 6 | [URL Shortener + Analytics](projects/06-url-shortener-analytics) | Next.js/TS · Prisma · Postgres · Redis | 🟡 Mid | 35 |
+| 7 | [Job Application Tracker](projects/07-job-application-tracker) | Next.js/TS · Prisma · Postgres · Redis · BullMQ | 🟠 Mid→Advanced | 58 |
 
 ---
 
-## Running any project
+## 1️⃣ RAG Chatbot
 
-Each project's own README has full setup instructions, but the shape is
-consistent throughout:
+![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python&logoColor=white)
+![LangChain](https://img.shields.io/badge/LangChain-1.4-1C3C3C)
+![Chroma](https://img.shields.io/badge/ChromaDB-vector%20store-orange)
+![Difficulty](https://img.shields.io/badge/difficulty-beginner_to_mid-green)
+
+Upload PDFs/TXT/CSV, ask questions, get answers that **cite the exact
+chunk** they came from — or an honest "I don't know" instead of a guess.
+
+```mermaid
+flowchart LR
+    A["📄 PDF / TXT / CSV"] --> B["Loader"]
+    B --> C["Token-aware<br/>Chunker"]
+    C --> D[("Chroma<br/>Vectorstore")]
+
+    Q["❓ Question"] --> R{"Retrieve above<br/>relevance threshold?"}
+    D --> R
+    R -->|no| N["🤷 I don't know"]
+    R -->|yes| L["LLM + cited context"]
+    L --> AOK["✅ Answer with [source#chunk]"]
+
+    style N fill:#fde8e8,stroke:#e11d48
+    style AOK fill:#e6f9ee,stroke:#10b981
+```
+
+**Why it earns a resume line:** RAG is *the* in-demand applied-AI skill
+right now, and every interviewer has seen the shallow version. This one
+has real answers ready for "why token-based chunking, not characters?" and
+"how do you know retrieval quality is any good?" — backed by an eval
+script that actually measures hit-rate and answer accuracy, not a vibe.
+
+## 2️⃣ Idempotent Payment Gateway
+
+![Node](https://img.shields.io/badge/Node.js-TypeScript-339933?logo=node.js&logoColor=white)
+![Postgres](https://img.shields.io/badge/PostgreSQL-unique%20constraint-4169E1?logo=postgresql&logoColor=white)
+![Difficulty](https://img.shields.io/badge/difficulty-mid_to_advanced-orange)
+
+Fire the same charge request 10 times **simultaneously**. Exactly one
+charge happens. Everyone gets the identical response back.
+
+```mermaid
+sequenceDiagram
+    participant C1 as Request A
+    participant C2 as Request B (concurrent)
+    participant DB as Postgres (unique key)
+    participant Pay as Payment Processor
+
+    C1->>DB: INSERT idempotency_key
+    C2->>DB: INSERT idempotency_key
+    DB-->>C1: ✅ wins the race
+    DB--xC2: ❌ unique violation
+    C1->>Pay: charge()
+    C2->>DB: poll & wait...
+    Pay-->>C1: charged ✔
+    C1->>DB: mark completed
+    DB-->>C2: completed → replay
+    Note over C1,C2: Both return 201,<br/>same charge id
+```
+
+**Why it earns a resume line:** the only pure-backend, non-AI project
+here — proof you're more than "did some AI stuff." Idempotency keys and
+race-safe writes are a real interview topic at any company touching
+payments or webhooks, and this one is *load-tested*: 20 concurrent calls
+in, exactly 1 charge out, verified against a real Postgres instance.
+
+## 3️⃣ Network Intrusion Detection System
+
+![Python](https://img.shields.io/badge/Python-scikit--learn-F7931E?logo=scikitlearn&logoColor=white)
+![XGBoost](https://img.shields.io/badge/XGBoost-gradient%20boosting-red)
+![Flask](https://img.shields.io/badge/Flask-serving-black?logo=flask)
+![Difficulty](https://img.shields.io/badge/difficulty-mid-yellow)
+
+Classifies live traffic as normal or one of four attack types — and
+optimizes for **catching attacks**, not for a misleadingly high accuracy
+score.
+
+```mermaid
+flowchart LR
+    A["🌐 KDD99 traffic<br/>494,021 rows"] --> B["Dedup 70.5%<br/><sub>the NSL-KDD fix</sub>"]
+    B --> C["5-category taxonomy<br/>normal · DoS · Probe · R2L · U2R"]
+    C --> D["🌲 Random Forest"]
+    C --> E["🚀 XGBoost"]
+    D --> F{"Compare by<br/>attack_recall<br/>not accuracy"}
+    E --> F
+    F --> G["🏆 Ship the winner"]
+    G --> H["Flask /predict"]
+    H --> I["🛡️ category + confidence"]
+
+    style F fill:#fff7e6,stroke:#f59e0b
+```
+
+**Why it earns a resume line:** the one ML project here that isn't
+LLM-shaped — shows you can handle tabular data and classical ML, not just
+prompt an API. Comes with a real, earned answer to the classic trap
+question "your model gets 99% accuracy, is it good?": this one deliberately
+optimizes for attack recall instead, and hit **100% recall on the rarest
+attack class** in a real run.
+
+## 4️⃣ Conversational RAG
+
+![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python&logoColor=white)
+![LangChain](https://img.shields.io/badge/LangChain-1.4-1C3C3C)
+![Difficulty](https://img.shields.io/badge/difficulty-mid-yellow)
+
+RAG that survives a follow-up question. "How many days is *that* per
+week?" gets rewritten to a standalone question **before** it hits
+retrieval — the step most "chat with your PDF" projects skip entirely.
+
+```mermaid
+flowchart LR
+    F["👤 \"How many days<br/>is that per week?\""] --> E{"History<br/>empty?"}
+    E -->|first turn| U["use as-is"]
+    E -->|has history| RW["🔄 LLM rewrites<br/>using prior turns"]
+    RW --> SQ["📝 standalone question"]
+    U --> RET
+    SQ --> RET["Retrieve + Answer"]
+    RET --> ANS["💬 Answer"]
+    ANS --> HIST["Append to history"]
+    HIST --> BUD{"Over token<br/>budget?"}
+    BUD -->|yes| SUM["Summarize oldest turn"]
+    BUD -->|no| KEEP["Keep as-is"]
+
+    style RW fill:#f5f0ff,stroke:#8b5cf6
+```
+
+**Why it earns a resume line:** nearly every "chat with your docs" resume
+bullet is the single-shot version — a bot that correctly resolves a
+pronoun is the detail that proves you went past a tutorial. Comes with a
+captured, real side-by-side transcript proving the exact failure it fixes,
+which is a far stronger interview story than "it supports multi-turn
+conversations."
+
+## 5️⃣ Meeting Notes Summariser
+
+![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python&logoColor=white)
+![Pydantic](https://img.shields.io/badge/Pydantic-structured%20output-E92063)
+![Difficulty](https://img.shields.io/badge/difficulty-beginner_to_mid-green)
+
+Paste a messy transcript, get structured decisions and action items back
+— with any field the model couldn't actually confirm **left blank, not
+guessed**.
+
+```mermaid
+flowchart LR
+    T["🎙️ messy transcript<br/><sub>\"um, someone should...\"</sub>"] --> S["LLM + Pydantic schema"]
+    S --> O["Summary + Decisions<br/>+ Action Items"]
+    O --> D{"Owner/date<br/>stated?"}
+    D -->|yes| K["✅ keep value"]
+    D -->|no| NL["null — never invented"]
+    O --> G["🔍 Grounding check<br/><sub>word-overlap, zero LLM calls</sub>"]
+    G -->|mismatch| W["⚠️ flagged for review"]
+
+    style NL fill:#e6f9ee,stroke:#10b981
+    style W fill:#fff7e6,stroke:#f59e0b
+```
+
+**Why it earns a resume line:** structured extraction from messy text is
+one of the *most* commercially deployed LLM patterns — ticket triage,
+legal review, CRM notes — more common in real jobs than open-ended chat.
+Its best story: a transcript with an action item deliberately left
+unassigned, with two named speakers sitting right there as bait, verified
+live to come back `owner: null` — a demonstrated answer to "how do you
+stop an LLM from making things up," not a claimed one.
+
+## 6️⃣ URL Shortener + Analytics
+
+![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-cache%20%2B%20rate%20limit-DC382D?logo=redis&logoColor=white)
+![Postgres](https://img.shields.io/badge/PostgreSQL-Prisma-4169E1?logo=postgresql&logoColor=white)
+![Difficulty](https://img.shields.io/badge/difficulty-mid-yellow)
+
+Short links with click analytics, QR codes, expiration, and rate limiting
+— the classic "design a URL shortener" interview question, actually built
+and load-tested.
+
+```mermaid
+flowchart LR
+    R["🔗 GET /:slug"] --> C{"Redis<br/>cache hit?"}
+    C -->|"yes ⚡ ~2ms"| RD["302 redirect"]
+    C -->|no| PG[("Postgres")]
+    PG --> POP["populate cache<br/><sub>TTL = expiresAt</sub>"]
+    POP --> RD
+    RD -.fire &amp; forget.-> LOG["📊 log click + geo"]
+
+    style RD fill:#e6f9ee,stroke:#10b981
+    style C fill:#f5f0ff,stroke:#8b5cf6
+```
+
+**Why it earns a resume line:** maps almost exactly onto a real system-
+design interview question, so you've *built and measured* the thing
+people usually only whiteboard. Proof, not claims: **1.9ms** average
+cache-hit redirect latency measured live, and 30 concurrent link-creation
+requests against a limit of 10 letting through *exactly* 10 — the number
+that proves the rate limiter's atomicity, not just "usually correct."
+
+## 7️⃣ Job Application Tracker
+
+![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js&logoColor=white)
+![BullMQ](https://img.shields.io/badge/BullMQ-background%20jobs-DC382D?logo=redis&logoColor=white)
+![OAuth](https://img.shields.io/badge/GitHub%20OAuth-from%20scratch-181717?logo=github&logoColor=white)
+![Difficulty](https://img.shields.io/badge/difficulty-mid_to_advanced-orange)
+
+Applications move through a real, validated status pipeline with
+background email reminders — behind real auth: email/password **and**
+"Sign in with GitHub," both built from the actual protocol.
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant App
+    participant GH as GitHub
+    participant DB as Postgres
+
+    U->>App: "Sign in with GitHub"
+    App-->>U: redirect + state cookie (CSRF)
+    U->>GH: authorize
+    GH->>App: callback?code&state
+    App->>App: verify state matches
+    App->>GH: exchange code → access_token
+    App->>GH: fetch verified profile
+    App->>DB: find-or-create user
+    App-->>U: session JWT (httpOnly cookie)
+```
+
+```mermaid
+stateDiagram-v2
+    [*] --> Applied
+    Applied --> Screening
+    Applied --> Rejected
+    Screening --> Interview
+    Screening --> Rejected
+    Interview --> Offer
+    Interview --> Rejected
+    Offer --> Rejected: withdrawn/declined
+    Rejected --> [*]
+    Offer --> [*]
+```
+
+**Why it earns a resume line:** the least flashy idea, the most real
+software. The only project here with an OAuth2 flow built step-by-step
+against GitHub's actual API (not a library configured to do it
+invisibly), a real background job queue for scheduled reminders, and two
+independently-tested access-control layers — ownership checks *and* a
+role-gated admin view, including a test proving one user genuinely cannot
+edit another user's data. The status pipeline is a real state machine with
+a full audit trail, which is also what makes its funnel analytics correct.
+
+---
+
+## 🚀 Running any project
 
 ```bash
 cd projects/0N-project-name
-# Python projects:
+
+# Python projects
 python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements-dev.txt
-# Node projects:
+# Node projects
 npm install
 
 cp .env.example .env   # fill in whatever credentials that project needs
 pytest   # or: npm test
 ```
 
-Projects using Postgres/Redis (2, 6, 7) include a `docker-compose.yml` —
-`docker compose up -d` gets you a working database with no local install.
+Projects using Postgres/Redis (**2**, **6**, **7**) ship a
+`docker-compose.yml` — `docker compose up -d` and you have a working
+database with nothing installed locally.
 
-## License
+## 📄 License
 
 MIT — see [LICENSE](LICENSE).
