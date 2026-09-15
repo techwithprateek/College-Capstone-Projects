@@ -80,7 +80,7 @@ flowchart LR
     D --> R
     R -->|no| N["🤷 I don't know"]
     R -->|yes| L["LLM + cited context"]
-    L --> AOK["✅ Answer with [source#chunk]"]
+    L --> AOK["✅ Cited answer (source + chunk id)"]
 
     style N fill:#fde8e8,stroke:#e11d48
     style AOK fill:#e6f9ee,stroke:#10b981
@@ -171,7 +171,7 @@ retrieval — the step most "chat with your PDF" projects skip entirely.
 
 ```mermaid
 flowchart LR
-    F["👤 \"How many days<br/>is that per week?\""] --> E{"History<br/>empty?"}
+    F["👤 How many days<br/>is that per week?"] --> E{"History<br/>empty?"}
     E -->|first turn| U["use as-is"]
     E -->|has history| RW["🔄 LLM rewrites<br/>using prior turns"]
     RW --> SQ["📝 standalone question"]
@@ -205,7 +205,7 @@ guessed**.
 
 ```mermaid
 flowchart LR
-    T["🎙️ messy transcript<br/><sub>\"um, someone should...\"</sub>"] --> S["LLM + Pydantic schema"]
+    T["🎙️ messy transcript<br/><sub>um, someone should...</sub>"] --> S["LLM + Pydantic schema"]
     S --> O["Summary + Decisions<br/>+ Action Items"]
     O --> D{"Owner/date<br/>stated?"}
     D -->|yes| K["✅ keep value"]
@@ -243,7 +243,7 @@ flowchart LR
     C -->|no| PG[("Postgres")]
     PG --> POP["populate cache<br/><sub>TTL = expiresAt</sub>"]
     POP --> RD
-    RD -.fire &amp; forget.-> LOG["📊 log click + geo"]
+    RD -. async, non-blocking .-> LOG["📊 log click + geo"]
 
     style RD fill:#e6f9ee,stroke:#10b981
     style C fill:#f5f0ff,stroke:#8b5cf6
